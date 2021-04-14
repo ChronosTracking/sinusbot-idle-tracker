@@ -1,7 +1,7 @@
 registerPlugin({
-    name: 'AFK Polizei auf dem Vetschau TS',
+    name: 'sinusbot-idle-tracker',
     version: '1.0',
-    description: 'Kickt Jan',
+    description: 'Tracks the idle time of a user and activates a kick timer after a set treshold',
     author: 'Erik Spiegel',
     vars: [
         {
