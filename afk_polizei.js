@@ -82,7 +82,7 @@ registerPlugin({
         if(client) {
 
             let currentChannel = client.getChannels()
-            console.log('Client is in idle channel ' + idleChannelList.includes(currentChannel[0].id()) + ' (' + currentChannel[0].name() + ')')
+            console.log('Client ' + client.name() + ' (' + client.uid() + ') is in idle channel ' + idleChannelList.includes(currentChannel[0].id()) + ' (' + currentChannel[0].name() + ')')
 
             if(client.isMuted() || client.isDeaf() || client.isAway()) {
 
