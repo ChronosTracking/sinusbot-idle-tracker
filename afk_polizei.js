@@ -37,21 +37,29 @@ registerPlugin({
                 }
             ]
         },
+        {
+            name: 'debugMode',
+            title: 'Debug mode',
+            type: 'checkbox'
+        }
     ]
-}, function(sinusbot, config) {
+}, function(sinusbot, config, meta) {
 
     const event = require('event')
     const backend = require('backend')
+    const engine = require('engine')
 
     const maxIdleTime = config.idleTime * 60 * 1000
     const UID = config.jan_uid
     const banTime = config.banTime * 60
     const idleChannelList = config.idleChannelList.filter(el => el.idleChannel != undefined).map(el => el.idleChannel)
+    const debugMode = config.debugMode
 
     console.log('Max idle time in minutes : ' + maxIdleTime / 60000)
     console.log('UID of user: ' + UID)
     console.log('Ban time in minutes: ' + banTime / 60)
     console.log('List of idle channels: ' + [... new Set(idleChannelList.map(el => backend.getChannelByID(el).name()))])
+    console.log('Debug mode: ' + debugMode)
 
     let wasMuted = false
     let timeOutSet = false
@@ -62,7 +70,7 @@ registerPlugin({
         if(timeOutSet && ev.client.uid() === UID) {
             clearTimeout(timeOut)
             timeOutSet = false
-            console.log('Timer stopped')
+            log('Timer stopped')
         }
     })
 
@@ -70,7 +78,7 @@ registerPlugin({
         if(ev.fromChannel == undefined && ev.client.uid() === UID && banOnNextConnect) {
             ev.client.ban(banTime,'Idlemeister')
             banOnNextConnect = false
-            console.log('Banned on reconnect')
+            log('Banned on reconnect')
         }
     })
 
@@ -81,12 +89,12 @@ registerPlugin({
         if(client) {
 
             let currentChannel = client.getChannels()
-            console.log('Client ' + client.name() + ' (' + client.uid() + ') is in idle channel ' + idleChannelList.includes(currentChannel[0].id()) + ' (' + currentChannel[0].name() + ')')
+            log('Client ' + client.name() + ' (' + client.uid() + ') is in idle channel ' + idleChannelList.includes(currentChannel[0].id()) + ' (' + currentChannel[0].name() + ')')
 
             if(client.isMuted() || client.isDeaf() || client.isAway()) {
 
                 wasMuted = true
-                console.log('Client is muted')
+                log('Client is muted')
 
             } else if(!timeOutSet && !wasMuted && !(idleChannelList.includes(currentChannel[0].id())) && client.getIdleTime() > maxIdleTime) {
 
@@ -98,7 +106,7 @@ registerPlugin({
                     client.kickFromServer('Hör auf zu idlen')
                     timeOutSet = false
                     banOnNextConnect = true
-                    console.log('Client didnt poke bot in time')
+                    log('Client didnt poke bot in time')
 
                 },60000)
                 console.log('Timer started')
@@ -106,11 +114,17 @@ registerPlugin({
             } else if(wasMuted) {
 
                 wasMuted = false
-                console.log('Client was muted before, wasMuted set to false')
+                log('Client was muted before, wasMuted set to false')
 
             }
         } else {
-            console.log('Client isnt on Teamspeak')
+            log('Client isnt on Teamspeak')
+        }
+    }
+
+    function log(message) {
+        if(debugMode) {
+            engine.log(`[$meta.name > DEBUG] $message`)
         }
     }
 
