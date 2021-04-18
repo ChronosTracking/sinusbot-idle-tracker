@@ -124,7 +124,7 @@ registerPlugin({
 
     function log(message) {
         if(debugMode) {
-            engine.log(`[{$meta.name} > DEBUG] {$message}`)
+            engine.log(`[${meta.name} > DEBUG] ${message}`)
         }
     }
 
