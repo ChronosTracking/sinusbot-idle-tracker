@@ -53,7 +53,6 @@ registerPlugin({
     console.log('Ban time in minutes: ' + banTime / 60)
     console.log('List of idle channels: ' + [... new Set(idleChannelList.map(el => backend.getChannelByID(el).name()))])
 
-    let lastCheckedIdleTime = 0
     let wasMuted = false
     let timeOutSet = false
     let banOnNextConnect = false
@@ -86,7 +85,6 @@ registerPlugin({
 
             if(client.isMuted() || client.isDeaf() || client.isAway()) {
 
-                lastCheckedIdleTime = client.getIdleTime()
                 wasMuted = true
                 console.log('Client is muted')
 
@@ -98,17 +96,17 @@ registerPlugin({
                 timeOut = setTimeout(function() {
 
                     client.kickFromServer('Hör auf zu idlen')
+                    timeOutSet = false
                     banOnNextConnect = true
                     console.log('Client didnt poke bot in time')
 
                 },60000)
                 console.log('Timer started')
 
-            } else if(wasMuted && client.getIdleTime() < lastCheckedIdleTime) {
+            } else if(wasMuted) {
 
-                lastCheckedIdleTime = 0
                 wasMuted = false
-                console.log('Idle time has been reset')
+                console.log('Client was muted before, wasMuted set to false')
 
             }
         } else {
