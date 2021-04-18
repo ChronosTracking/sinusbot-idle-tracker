@@ -109,7 +109,7 @@ registerPlugin({
                     log('Client didnt poke bot in time')
 
                 },60000)
-                console.log('Timer started')
+                log('Timer started')
 
             } else if(wasMuted) {
 
