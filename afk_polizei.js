@@ -4,6 +4,7 @@ registerPlugin({
     description: 'Tracks the idle time of a user and activates a kick timer after a set treshold',
     author: 'Erik Spiegel',
     vars: [
+
         {
             name: 'idleTime',
             title: 'Max idle time (in minutes)',
@@ -70,7 +71,7 @@ registerPlugin({
         if(timeOutSet && ev.client.uid() === UID) {
             clearTimeout(timeOut)
             timeOutSet = false
-            log('Timer stopped')
+            log('Poke received, timer stopped')
         }
     })
 
@@ -109,7 +110,15 @@ registerPlugin({
                     log('Client didnt poke bot in time')
 
                 },60000)
-                log('Timer started')
+                log('Idling detected timer started')
+
+            } else if(!timeOutSet && !wasMuted && !(idleChannelList.includes(currentChannel[0].id()))) {
+                let random = Math.floor(Math.random() * 10)
+
+                if(random == 7) {
+                    stichProbe(client)
+                }
+                log('Random number was ' + random)
 
             } else if(wasMuted) {
 
@@ -120,6 +129,26 @@ registerPlugin({
         } else {
             log('Client isnt on Teamspeak')
         }
+    }
+
+    function stichProbe(client) {
+
+        for(i = 0; i < 6; i++) {
+            client.poke('!!! STICHPROBE !!!')
+        }
+
+        client.poke('Bot anstupsen')
+
+        timeOutSet = true
+        timeOut = setTimeout(function() {
+
+            client.kickFromServer('Hör auf zu idlen')
+            timeOutSet = false
+            banOnNextConnect = true
+            log('Client didnt poke bot in time (Stichprobe)')
+
+        },60000)
+        log('Stichprobe gestartet')
     }
 
     function log(message) {
