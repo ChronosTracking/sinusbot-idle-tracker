@@ -65,13 +65,20 @@ registerPlugin({
     let wasMuted = false
     let timeOutSet = false
     let banOnNextConnect = false
+    let captcha = ''
     let timeOut
 
-    event.on('poke', function(ev) {
-        if(timeOutSet && ev.client.uid() === UID) {
-            clearTimeout(timeOut)
-            timeOutSet = false
-            log('Poke received, timer stopped')
+    event.on('poke', function(msg) {
+        if(timeOutSet && msg.client.uid() === UID) {
+            if(msg.text === captcha) {
+                clearTimeout(timeOut)
+                timeOutSet = false
+                msg.client.poke('✔')
+                log('Poke received, timer stopped')
+            } else {
+                msg.client.poke(msg.text + ' sollte ' + captcha + ' sein')
+                log('Wrong captcha')
+            }
         }
     })
 
@@ -99,23 +106,13 @@ registerPlugin({
 
             } else if(!timeOutSet && !wasMuted && !(idleChannelList.includes(currentChannel[0].id())) && client.getIdleTime() > maxIdleTime) {
 
-                client.poke('AFK-Check bitte den Bot anstupsen')
-
-                timeOutSet = true
-                timeOut = setTimeout(function() {
-
-                    client.kickFromServer('Hör auf zu idlen')
-                    timeOutSet = false
-                    banOnNextConnect = true
-                    log('Client didnt poke bot in time')
-
-                },60000)
-                log('Idling detected timer started')
+                startTimer(client)
+                log('Idling detected, timer started')
 
             } else if(!timeOutSet && !wasMuted && !(idleChannelList.includes(currentChannel[0].id()))) {
-                let random = Math.floor(Math.random() * 10)
+                let random = getRandom(8)
 
-                if(random == 7) {
+                if(random == 4) {
                     stichProbe(client)
                 }
                 log('Random number was ' + random)
@@ -137,7 +134,36 @@ registerPlugin({
             client.poke('!!! STICHPROBE !!!')
         }
 
-        client.poke('Bot anstupsen')
+        startTimer(client)
+        log('Stichprobe gestartet')
+    }
+
+    function captchaGenerator() {
+        let alphabet = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz'
+        let numbers = '1234567890'
+        let captcha = ''
+
+        for(i = 0; i < 5; i++) {
+            if(getRandom(5) < 2) {
+                captcha = captcha.concat(numbers.charAt(getRandom(numbers.length)))
+            } else {
+                captcha = captcha.concat(alphabet.charAt(getRandom(alphabet.length)))
+            }
+        }
+
+        log('Captcha generated ' + captcha)
+        return captcha
+    }
+
+    function getRandom(max) {
+        return Math.floor(Math.random() * max)
+    }
+
+    function startTimer(client) {
+        captcha = captchaGenerator()
+
+        client.poke('Bitte folgenden Text zurückschreiben')
+        client.poke(captcha)
 
         timeOutSet = true
         timeOut = setTimeout(function() {
@@ -145,10 +171,9 @@ registerPlugin({
             client.kickFromServer('Hör auf zu idlen')
             timeOutSet = false
             banOnNextConnect = true
-            log('Client didnt poke bot in time (Stichprobe)')
+            log('Client didnt poke bot in time')
 
         },60000)
-        log('Stichprobe gestartet')
     }
 
     function log(message) {
@@ -157,5 +182,5 @@ registerPlugin({
         }
     }
 
-    setInterval(checkAFK, 120 * 1000)
+    setInterval(checkAFK, 140 * 1000)
 });
