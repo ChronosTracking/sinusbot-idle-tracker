@@ -66,6 +66,7 @@ registerPlugin({
     let timeOutSet = false
     let banOnNextConnect = false
     let captcha = ''
+    let lastStichprobenTime = 0
     let timeOut
 
     event.on('poke', function(msg) {
@@ -110,12 +111,12 @@ registerPlugin({
                 log('Idling detected, timer started')
 
             } else if(!timeOutSet && !wasMuted && !(idleChannelList.includes(currentChannel[0].id()))) {
-                let random = getRandom(8)
 
-                if(random == 4) {
+                if((client.getOnlineTime() / 60000) < lastStichprobenTime)
+                    lastStichprobenTime = 0
+
+                if(tryStichprobe((client.getOnlineTime() / 60000) - lastStichprobenTime))
                     stichProbe(client)
-                }
-                log('Random number was ' + random)
 
             } else if(wasMuted) {
 
@@ -133,6 +134,8 @@ registerPlugin({
         for(i = 0; i < 6; i++) {
             client.poke('!!! STICHPROBE !!!')
         }
+
+        lastStichprobenTime = client.getOnlineTime / 60000
 
         startTimer(client)
         log('Stichprobe gestartet')
@@ -174,6 +177,17 @@ registerPlugin({
             log('Client didnt poke bot in time')
 
         },60000)
+    }
+
+    function tryStichprobe(onlineTime) {
+        let probability = 0.2 * Math.pow(Math.E,-20 * Math.pow(Math.E, -(1/20 * onlineTime)))
+
+        log(`Current Stichproben probability: ${probability}`)
+
+        if(probability > Math.random())
+            return true
+        else
+            return false
     }
 
     function log(message) {
