@@ -112,7 +112,7 @@ registerPlugin({
 
             } else if(!timeOutSet && !wasMuted && !(idleChannelList.includes(currentChannel[0].id()))) {
 
-                if((client.getOnlineTime() / 60000) < lastStichprobenTime)
+                if((client.getOnlineTime() / 60000) <= lastStichprobenTime)
                     lastStichprobenTime = 0
 
                 if(tryStichprobe((client.getOnlineTime() / 60000) - lastStichprobenTime))
@@ -180,7 +180,11 @@ registerPlugin({
     }
 
     function tryStichprobe(onlineTime) {
-        let probability = 0.2 * Math.pow(Math.E,-20 * Math.pow(Math.E, -(1/20 * onlineTime)))
+
+        let probability = 0.2 * Math.pow(Math.E,-20 * Math.pow(Math.E, -((1/20) * onlineTime)))
+
+        if(isNaN(probability))
+            log(onlineTime)
 
         log(`Current Stichproben probability: ${probability}`)
 
